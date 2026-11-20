@@ -1,0 +1,59 @@
+name: build-rules
+
+on:
+  push:
+    tags:
+      - 'core-*'
+      - 'isotope-*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Системные зависимости
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc libpango-1.0-0 libpangoft2-1.0-0 \
+            libharfbuzz0b libharfbuzz-subset0 fonts-dejavu-core
+
+      - run: pip install -r requirements.txt
+
+      - name: Шрифты на месте?
+        run: test -f scripts/fonts/PT_Serif-Web-Regular.ttf
+
+      - name: Сборка A4
+        run: python scripts/build_rules.py "rules/*.md" --outdir dist/a4 --format a4 --no-font-download
+
+      - name: Сборка A5
+        run: python scripts/build_rules.py "rules/*.md" --outdir dist/a5 --format a5 --no-font-download
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rules-books
+          path: dist/
+
+      - name: Релиз
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          shopt -s nullglob
+          PREFIX="${GITHUB_REF_NAME%%-*}"
+          FILES=(dist/*/${PREFIX}-*.pdf dist/*/${PREFIX}-*.docx)
+          if [ ${#FILES[@]} -eq 0 ]; then
+            echo "Нет файлов для префикса '$PREFIX'"; exit 1
+          fi
+          EXTRA=""
+          case "$GITHUB_REF_NAME" in *-rc*|*-beta*) EXTRA="--prerelease";; esac
+          gh release create "$GITHUB_REF_NAME" "${FILES[@]}" \
+            --title "$GITHUB_REF_NAME" --generate-notes $EXTRA
