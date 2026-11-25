@@ -42,9 +42,16 @@ jobs:
         id: ver
         run: |
           V=$(python - <<'PY'
-          import re, pathlib
-          t = pathlib.Path('rules/core.md').read_text(encoding='utf-8')
-          print(re.search(r'Ядро (\d+\.\d+\.\d+)', t).group(1))
+          import re, sys
+          from pathlib import Path
+          cores = [p for p in sorted(Path('rules').glob('*.md'))
+                   if re.search(r'^type:\s*core\s*$', p.read_text(encoding='utf-8'), re.M)]
+          if not cores:
+              sys.exit('В rules/ нет файла с type: core')
+          m = re.search(r'Ядро (\d+\.\d+\.\d+)', cores[0].read_text(encoding='utf-8'))
+          if not m:
+              sys.exit('В файле ядра нет строки «Ядро x.y.z»')
+          print(m.group(1))
           PY
           )
           echo "v=$V" >> "$GITHUB_OUTPUT"
