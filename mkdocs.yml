@@ -1,0 +1,90 @@
+site_name: Irreality
+site_url: https://vireist.github.io/irreality/
+site_description: 'Настольная ролевая система: ядро и модули сеттингов'
+repo_url: https://github.com/Vireist/irreality
+repo_name: Vireist/irreality
+copyright: CC BY 4.0 · Vireist
+docs_dir: site-src
+site_dir: site
+theme:
+  name: material
+  variant: classic
+  language: ru
+  custom_dir: overrides
+  font: false
+  palette:
+  - scheme: default
+    primary: custom
+    accent: custom
+    toggle:
+      icon: material/brightness-7
+      name: Тёмная тема
+  - scheme: slate
+    primary: custom
+    accent: custom
+    toggle:
+      icon: material/brightness-4
+      name: Светлая тема
+  features:
+  - navigation.tabs
+  - navigation.sections
+  - navigation.indexes
+  - navigation.top
+  - navigation.footer
+  - toc.follow
+  - search.highlight
+  - search.suggest
+  - content.code.copy
+markdown_extensions:
+- admonition
+- attr_list
+- md_in_html
+- tables
+- pymdownx.details
+- pymdownx.superfences
+- toc:
+    permalink: true
+extra_css:
+- stylesheets/extra.css
+extra:
+  version:
+    provider: mike
+    default: latest
+    alias: true
+plugins:
+- search
+- mike:
+    alias_type: copy
+    canonical_version: latest
+nav:
+- Главная: index.md
+- Ядро:
+  - rulebook/index.md
+  - Введение: rulebook/01-vvedenie.md
+  - Ядро за одну страницу: rulebook/02-yadro-za-odnu-stranitsu.md
+  - Термины: rulebook/03-terminy.md
+  - Глава 1. Персонаж: rulebook/04-glava-1-personazh.md
+  - Глава 2. Проверки: rulebook/05-glava-2-proverki.md
+  - Глава 3. Здоровье и Рассудок: rulebook/06-glava-3-zdorove-i-rassudok.md
+  - Глава 4. Бой: rulebook/07-glava-4-boy.md
+  - Глава 5. Огнестрел: rulebook/08-glava-5-ognestrel.md
+  - Глава 6. Броня и снаряжение: rulebook/09-glava-6-bronya-i-snaryazhenie.md
+  - Глава 7. Мастер: rulebook/10-glava-7-master.md
+  - Приложение A. Шпаргалка: rulebook/11-prilozhenie-a-shpargalka.md
+  - Приложение B. Примеры: rulebook/12-prilozhenie-b-primery.md
+  - Приложение C. Готовый персонаж: rulebook/13-prilozhenie-c-gotovyy-personazh.md
+- Модули:
+  - modules/index.md
+  - Изотопный Ярус:
+    - isotope-tier/index.md
+    - Введение: isotope-tier/01-vvedenie.md
+    - Термины модуля: isotope-tier/02-terminy-modulya.md
+    - Глава 1. Саркофаг: isotope-tier/03-glava-1-sarkofag.md
+    - Глава 2. Ядерное оружие: isotope-tier/04-glava-2-yadernoe-oruzhie.md
+    - Глава 3. Боеприпасы: isotope-tier/05-glava-3-boepripasy.md
+    - Глава 4. Кибернетика и электроника: isotope-tier/06-glava-4-kibernetika-i-elektronika.md
+    - Глава 5. Рассудок на Ярусе: isotope-tier/07-glava-5-rassudok-na-yaruse.md
+    - Глава 6. Мастеру: isotope-tier/08-glava-6-masteru.md
+    - Приложение A. Шпаргалка: isotope-tier/09-prilozhenie-a-shpargalka.md
+    - Приложение B. Примеры: isotope-tier/10-prilozhenie-b-primery.md
+- Скачать: https://github.com/Vireist/irreality/releases/latest

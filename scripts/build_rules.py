@@ -205,6 +205,18 @@ def prepare_fonts(fdir: Path, download: bool) -> str:
               "\n    Можно вручную положить TTF в", fdir)
     return "\n".join(faces)
 
+def parse_front_matter(text):
+    m = re.match(r"\A---\s*\n(.*?)\n---\s*\n", text, re.S)
+    if not m:
+        return {}, text
+    meta = {}
+    for line in m.group(1).splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or ":" not in line:
+            continue
+        k, v = line.split(":", 1)
+        meta[k.strip()] = v.strip().strip('"').strip("'")
+    return meta, text[m.end():]
 
 def split_head(text: str):
     """Первый H1 → заголовок обложки; следующая строка → подзаголовок."""
@@ -256,12 +268,28 @@ def render_body(body_md: str):
         out.append("</ul>")
         return "".join(out)
 
+    num_map = {}
+    def collect(items):
+        for t in items:
+            m = re.match(r"(?:Глава\s+)?(\d+(?:\.\d+)?)[.\s]", t["name"])
+            if m:
+                num_map.setdefault(m.group(1), t["id"])
+            collect(t.get("children", []))
+    collect(md.toc_tokens)
+    html = re.sub(
+        r"§(\d+(?:\.\d+)?)",
+        lambda m: (f'<a href="#{num_map[m.group(1)]}">§{m.group(1)}</a>'
+                   if m.group(1) in num_map else m.group(0)),
+        html)
+
     return html, walk(md.toc_tokens)
 
 
-def assemble(title, subtitle, body_html, toc_html, css):
+def assemble(title, subtitle, body_html, toc_html, css, brand="Настольная ролевая система", requires=None):
     nav = f'<nav class="toc"><h2>Содержание</h2>{toc_html}</nav>' if toc_html else ""
     sub = f'<p class="subtitle">{escape(subtitle)}</p>' if subtitle else ""
+    req = (f'<p class="subtitle" style="font-size:9.5pt; margin-top:4mm;">'
+           f'Совместимо с ядром {escape(requires)}</p>') if requires else ""
     return f"""<!doctype html><html lang="ru"><head><meta charset="utf-8">
 <title>{escape(title)}</title><style>{css}</style></head><body>
 <section class="cover">
@@ -477,7 +505,7 @@ def make_reference(pandoc: str, work: Path, accent: str, profile: dict) -> Path:
         cond("firstRow", fill=soft, bold=True, color=acc)
         cond("band1Horizontal", fill=zebra)
 
-        sec = doc.sections[0]
+    sec = doc.sections[0]
     w, h, mt, mr, mb = profile["mm"]
     sec.page_width, sec.page_height = Mm(w), Mm(h)
     sec.top_margin, sec.bottom_margin = Mm(mt), Mm(mb)
@@ -555,7 +583,6 @@ def main():
     profile = PROFILES[args.format]
     fdir = Path(args.fonts_dir) if args.fonts_dir else Path(__file__).resolve().parent / "fonts"
     fonts_css = prepare_fonts(fdir, not args.no_font_download) if do_pdf else ""
-    css = make_css(profile, args.accent, fonts_css)
 
     pandoc = find_exe(PANDOC_PATH, "pandoc")
     if do_docx and not pandoc:
@@ -568,7 +595,10 @@ def main():
             print(f"! нет файла {p}")
             errors += 1
             continue
-        title, subtitle, body = split_head(p.read_text(encoding="utf-8"))
+        meta, rest = parse_front_matter(p.read_text(encoding="utf-8"))
+        title, subtitle, body = split_head(rest)
+        accent = meta.get("accent") or args.accent
+        css = make_css(profile, accent, fonts_css)
         ver = re.search(r"\d+\.\d+\.\d+", subtitle)
         stem = p.stem + (f"-{ver.group()}" if ver and ver.group() not in p.stem else "")
         stem = f"{stem}-{args.format}"
@@ -577,7 +607,11 @@ def main():
         if do_pdf:
             try:
                 body_html, toc_html = render_body(body)
-                full = assemble(title, subtitle, body_html, toc_html, css)
+                full = assemble(title, subtitle, body_html, toc_html, css,
+                                brand=meta.get("brand") or (
+                                    "Модуль сеттинга" if meta.get("type") == "module"
+                                    else "Настольная ролевая система"),
+                                requires=meta.get("requires"))
                 if args.keep_html:
                     (outdir / f"{stem}.html").write_text(full, encoding="utf-8")
                 build_pdf(full, p, outdir / f"{stem}.pdf")
@@ -591,7 +625,7 @@ def main():
         if do_docx:
             try:
                 build_docx(pandoc, p, title, subtitle, body,
-                           outdir / f"{stem}.docx", outdir, args.accent, profile)
+                           outdir / f"{stem}.docx", outdir, accent, profile)
                 print(f"   DOCX: {outdir / (stem + '.docx')}")
             except Exception as e:
                 print(f"! DOCX не собрался: {e}")

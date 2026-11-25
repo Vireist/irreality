@@ -1,0 +1,62 @@
+name: site
+
+on:
+  push:
+    tags:
+      - 'irreality-rulebook-*'
+      - 'irreality-isotope-tier-*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: site-versions
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install mkdocs-material mike
+
+      - name: Git-пользователь для коммитов mike
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Подтянуть существующие версии
+        run: git fetch origin gh-pages --depth=1 || true
+
+      - run: python scripts/build_site.py
+
+      - name: Версия из текста правил
+        id: ver
+        run: |
+          V=$(python - <<'PY'
+          import re, pathlib
+          t = pathlib.Path('rules/core.md').read_text(encoding='utf-8')
+          print(re.search(r'Ядро (\d+\.\d+\.\d+)', t).group(1))
+          PY
+          )
+          echo "v=$V" >> "$GITHUB_OUTPUT"
+          echo "Версия: $V"
+
+      - name: Публикация версии
+        run: |
+          V="${{ steps.ver.outputs.v }}"
+          case "${GITHUB_REF_NAME}" in
+            *-rc*|*-beta*)
+              mike deploy --push "$V" ;;
+            *)
+              mike deploy --push --update-aliases "$V" latest
+              mike set-default --push latest ;;
+          esac

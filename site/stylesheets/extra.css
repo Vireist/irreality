@@ -1,0 +1,25 @@
+@font-face { font-family:'PT Serif'; src:url('fonts/PT_Serif-Web-Regular.ttf'); font-weight:400; font-style:normal; font-display:swap; }
+@font-face { font-family:'PT Serif'; src:url('fonts/PT_Serif-Web-Bold.ttf'); font-weight:700; font-style:normal; font-display:swap; }
+@font-face { font-family:'PT Serif'; src:url('fonts/PT_Serif-Web-Italic.ttf'); font-weight:400; font-style:italic; font-display:swap; }
+@font-face { font-family:'PT Serif'; src:url('fonts/PT_Serif-Web-BoldItalic.ttf'); font-weight:700; font-style:italic; font-display:swap; }
+@font-face { font-family:'PT Sans'; src:url('fonts/PT_Sans-Web-Regular.ttf'); font-weight:400; font-style:normal; font-display:swap; }
+@font-face { font-family:'PT Sans'; src:url('fonts/PT_Sans-Web-Bold.ttf'); font-weight:700; font-style:normal; font-display:swap; }
+:root {
+  --md-text-font: 'PT Serif', Georgia, serif;
+  --md-primary-fg-color: #7A1E2B;
+  --md-primary-fg-color--light: #9B5660;
+  --md-primary-fg-color--dark: #5C1620;
+  --md-accent-fg-color: #7A1E2B;
+}
+.md-typeset { font-size: .82rem; line-height: 1.65; }
+.md-typeset h1, .md-typeset h2, .md-typeset h3, .md-typeset h4,
+.md-header__title, .md-tabs__link {
+  font-family: 'PT Sans', 'Segoe UI', sans-serif;
+}
+.md-typeset h1 { font-weight: 700; }
+.md-typeset h2 { border-bottom: 2px solid var(--md-primary-fg-color); padding-bottom: .2em; }
+.md-typeset table:not([class]) th {
+  background: var(--md-primary-fg-color--light);
+  color: #fff; font-family: 'PT Sans', sans-serif;
+}
+.md-typeset .md-button { margin: .2em .4em .2em 0; }

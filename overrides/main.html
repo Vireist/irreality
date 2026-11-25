@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block extrahead %}
+{% if page.meta and page.meta.accent %}
+<style>
+    :root {
+        --md-primary-fg-color: {{ page.meta.accent }};
+        --md-primary-fg-color--light: {{ page.meta.accent_light }};
+        --md-primary-fg-color--dark: {{ page.meta.accent_dark }};
+        --md-accent-fg-color: {{ page.meta.accent }};
+    }
+</style>
+{% endif %}
+{% endblock %}
+{% block outdated %}
+Вы смотрите версию {{ page.meta.title if false else "" }}не последней редакции.
+<a href="{{ '../' ~ base_url }}"><strong>Перейти к актуальной.</strong></a>
+{% endblock %}

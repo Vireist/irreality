@@ -3,8 +3,8 @@ name: build-rules
 on:
   push:
     tags:
-      - 'core-*'
-      - 'isotope-*'
+      - 'irreality-rulebook-*'
+      - 'irreality-isotope-tier-*'
   workflow_dispatch:
 
 permissions:
@@ -48,7 +48,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           shopt -s nullglob
-          PREFIX="${GITHUB_REF_NAME%%-*}"
+          PREFIX=$(echo "$GITHUB_REF_NAME" | sed -E 's/-[0-9]+\.[0-9]+\.[0-9]+.*$//')
           FILES=(dist/*/${PREFIX}-*.pdf dist/*/${PREFIX}-*.docx)
           if [ ${#FILES[@]} -eq 0 ]; then
             echo "Нет файлов для префикса '$PREFIX'"; exit 1
